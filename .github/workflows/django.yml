@@ -1,11 +1,10 @@
 name: Python application
 
 on: [push]
-  
 
 jobs:
-  build1:
-
+  test-postgres-14:
+    name: Test with PostgreSQL 14.9
     runs-on: ubuntu-latest
 
     services:
@@ -17,35 +16,30 @@ jobs:
           POSTGRES_DB: decide
         ports:
           - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd "pg_isready -U decide" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10.12
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.10.12
-    - name: psycopg2 prerequisites
-      run: sudo apt-get install libpq-dev
-    - name: Install dependencies and config
+    - name: Install psycopg2 prerequisites
+      run: sudo apt-get install -y libpq-dev
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
-    - name: Run migrations (unnecessary)
-      run: |
-        cd decide
-        python manage.py migrate
     - name: Run tests
       run: |
         cd decide
-        coverage run --source=. ./manage.py test  --keepdb 
-        coverage xml 
+        coverage run --source=. ./manage.py test --keepdb
+        coverage xml
 
-build2:
-
+  test-postgres-15:
+    name: Test with PostgreSQL 15.0
     runs-on: ubuntu-latest
 
     services:
@@ -57,30 +51,24 @@ build2:
           POSTGRES_DB: decide
         ports:
           - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd "pg_isready -U decide" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10.12
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.10.12
-    - name: psycopg2 prerequisites
-      run: sudo apt-get install libpq-dev
-    - name: Install dependencies and config
+    - name: Install psycopg2 prerequisites
+      run: sudo apt-get install -y libpq-dev
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
-    - name: Run migrations (unnecessary)
-      run: |
-        cd decide
-        python manage.py migrate
     - name: Run tests
       run: |
         cd decide
-        coverage run --source=. ./manage.py test  --keepdb 
-        coverage xml 
-
+        coverage run --source=. ./manage.py test --keepdb
+        coverage xml
